@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_restful import Api
-from resources.consulta import c6_consulta, pan_consulta, master_consulta, mercantil_consulta, ole_consulta, facta_consulta
+from resources.consulta import c6_consulta, pan_consulta, master_consulta, mercantil_consulta, ole_consulta, facta_consulta, enviar_documento
 
 
 
@@ -14,6 +14,7 @@ api.add_resource(master_consulta, '/master-consulta')
 api.add_resource(mercantil_consulta, '/mercantil-consulta')
 api.add_resource(ole_consulta, '/ole-consulta')
 api.add_resource(pan_consulta, '/pan-consulta')
+api.add_resource(enviar_documento, '/enviar_documento')
 
 if __name__ == '__main__':
     app.run(debug=True)

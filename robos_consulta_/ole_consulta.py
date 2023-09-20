@@ -15,6 +15,7 @@ import glob
 from selenium.common.exceptions import WebDriverException
 import requests
 from selenium.webdriver.common.alert import Alert
+import undetected_chromedriver as uc
 
 # def bevi_download():
 # definindo opcoes para o navegador
@@ -47,8 +48,9 @@ opt.add_experimental_option("prefs", prefs)
 def robo_ole_consulta(cpf):
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
-        navegador.get('https://app.norwaydigital.com.br/auth/signin')
+        navegador.get('https://www.youtube.com/watch?v=znlFu_lemsU&list=RDEMWzjnvwhEBiIfo26pzdGUgw&index=11')
         time.sleep(3)
+
     except WebDriverException as e:
         navegador.quit()
         return {'error': str(e)}

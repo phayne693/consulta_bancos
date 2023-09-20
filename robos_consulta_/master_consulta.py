@@ -47,8 +47,9 @@ opt.add_experimental_option("prefs", prefs)
 def robo_master_consulta(cpf):
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
-        navegador.get('https://app.norwaydigital.com.br/auth/signin')
+        navegador.get('https://c6.c6consig.com.br/')
         time.sleep(3)
+
     except WebDriverException as e:
         navegador.quit()
         return {'error': str(e)}
