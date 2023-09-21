@@ -31,4 +31,3 @@ def resolver_captcha():
             # Algo deu errado
             print('Erro ao resolver o captcha')
             break
-    return captcha_solution
