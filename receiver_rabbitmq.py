@@ -39,8 +39,7 @@ def main():
         threading_master.join()
         threading_pan.join()
         #confirmar a conclusão do processamento
-        ch.basic_ack(delivery_tag=method.delivery_tag
-                     )
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     channel.basic_consume(queue='Fila TESTE', on_message_callback=callback, auto_ack=False)
 
     print(' [*] Waiting for messages. To exit press CTRL+C')
@@ -76,6 +75,7 @@ def pan(body):
     mensagem = body.decode()
     resultado_pan = robo_pan_consulta(mensagem)
     print(f"[x] Bank Pan Received Document:{mensagem}\n {resultado_pan}")
+
 
 if __name__ == '__main__':
     try:

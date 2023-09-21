@@ -40,7 +40,7 @@ options.add_experimental_option("prefs", {
     "donwload.default.directory": "/home/jeferson/aws-puppeteer/clubeBeneficio"
 })
 prefs = {"download.default_directory": "/home/jeferson/aws-puppeteer/clubeBeneficio"}
-opt = uc.ChromeOptions()
+opt = webdriver.ChromeOptions()
 # opt.add_argument('--headless')
 opt.add_experimental_option("prefs", prefs)
 
@@ -48,10 +48,9 @@ opt.add_experimental_option("prefs", prefs)
 def robo_facta_consulta(cpf):
     navegador = None
     try:
-        navegador = uc.Chrome(service=page, options=opt)
-        navegador.get('https://c6.c6consig.com.br/')
+        navegador = webdriver.Chrome(service=page, options=opt)
+        navegador.get('https://desenv.facta.com.br/sistemaNovo/login.php')
         time.sleep(3)
-
     except WebDriverException as e:
         return {'error': str(e)}
     finally:

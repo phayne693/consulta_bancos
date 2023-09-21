@@ -16,6 +16,7 @@ from selenium.common.exceptions import WebDriverException
 import requests
 from selenium.webdriver.common.alert import Alert
 import undetected_chromedriver as uc
+from captcha import resolver_captcha
 
 # def bevi_download():
 # definindo opcoes para o navegador
@@ -48,9 +49,30 @@ opt.add_experimental_option("prefs", prefs)
 def robo_mercantil_consulta(cpf):
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
-        navegador.get('https://c6.c6consig.com.br/')
+        navegador.get('https://meumb.mercantil.com.br/login')
         time.sleep(3)
-
+        #inserir login
+        login = navegador.find_element(By.XPATH, '//*[@id="mat-input-0"]')
+        login.send_keys('LEONARDOSP11-39220')
+        #senha
+        senha = navegador.find_element(By.XPATH, '//*[@id="mat-input-1"]')
+        senha.send_keys('8BIVg3rS')
+        captcha_solved = None
+        while not captcha_solved:
+            captcha_solved = resolver_captcha()
+            print(captcha_solved)
+        time.sleep(2)
+        #inserir resultado
+        navegador.execute_script(
+            "document.querySelector('#g-recaptcha-response').innerHTML = "+"'"+captcha_solved+"'"
+        )
+        #clicar n sou um robo
+        recaptcha = navegador.find_element(By.XPATH, '//*[@id="recaptcha-anchor"]/div[1]')
+        recaptcha.click()
+        time.sleep(3)
+        #entrar
+        entrar = navegador.find_element(By.XPATH, '/html/body/app-root/div/app-main-layout/main/app-login/div/section[1]/div/form/div[5]/button')
+        entrar.click()
     except WebDriverException as e:
         navegador.quit()
         return {'error': str(e)}

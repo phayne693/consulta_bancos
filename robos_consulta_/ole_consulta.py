@@ -48,9 +48,12 @@ opt.add_experimental_option("prefs", prefs)
 def robo_ole_consulta(cpf):
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
-        navegador.get('https://www.youtube.com/watch?v=znlFu_lemsU&list=RDEMWzjnvwhEBiIfo26pzdGUgw&index=11')
+        navegador.get('https://ola.oleconsignado.com.br/usuario/index?returnurl=unauthorized/')
         time.sleep(3)
-
+        #insere login
+        login = navegador.find_element(By.XPATH, '//*[@id="Login"]')
+        # login.send_keys("")
+        print('teste')
     except WebDriverException as e:
         navegador.quit()
         return {'error': str(e)}
