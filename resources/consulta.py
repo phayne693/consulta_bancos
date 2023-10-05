@@ -79,13 +79,17 @@ class mercantil_consulta(Resource):
     def post(self):
         #obtem as variaveis do payload
         cpf = request.json.get('cpf')
+        api_key = request.json.get('api_key')
+        sitekey = request.json.get('sitekey')
+        url = request.json.get('url')
+        chave_secreta = request.json.get('chave_secreta')
         #valida o tamanho das variaveis
         if len(cpf) > 11:
             return {'success': False, 'message': 'CPF deve conter no maximo 11 números'}, 400
         elif not cpf.isnumeric():
             return {'success': False, 'message': 'CPF deve conter apenas numeros'}, 400
         #obtem o retorno do robo
-        resultado = robo_mercantil_consulta(cpf)
+        resultado = robo_mercantil_consulta(cpf, api_key, sitekey, url, chave_secreta)
         if resultado is None:
             return {'success': False, 'message': resultado}, 400
         else:

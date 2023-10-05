@@ -46,7 +46,7 @@ opt = webdriver.ChromeOptions()
 opt.add_experimental_option("prefs", prefs)
 
 
-def robo_mercantil_consulta(cpf):
+def robo_mercantil_consulta(cpf,api_key, sitekey, url, chave_secreta):
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
         navegador.get('https://meumb.mercantil.com.br/login')
@@ -57,20 +57,45 @@ def robo_mercantil_consulta(cpf):
         #senha
         senha = navegador.find_element(By.XPATH, '//*[@id="mat-input-1"]')
         senha.send_keys('8BIVg3rS')
-        captcha_solved = None
-        while not captcha_solved:
-            captcha_solved = resolver_captcha()
-            print(captcha_solved)
+        captcha_solution = resolver_captcha(api_key, sitekey, url)
+        if captcha_solution:
+            print(f'ReCAPTCHA resolvido com sucesso: {captcha_solution}')
+        else:
+            print('Falha ao resolver o reCAPTCHA')
         time.sleep(2)
         #inserir resultado
-        navegador.execute_script(
-            "document.querySelector('#g-recaptcha-response').innerHTML = "+"'"+captcha_solved+"'"
+        WebDriverWait(navegador, 10).until(
+            EC.presence_of_element_located((By.ID, 'g-recaptcha-response'))
         )
-        #clicar n sou um robo
-        recaptcha = navegador.find_element(By.XPATH, '//*[@id="recaptcha-anchor"]/div[1]')
-        recaptcha.click()
-        time.sleep(3)
-        #entrar
+        navegador.execute_script(
+            "document.querySelector('#g-recaptcha-response').innerHTML = "+"'"+captcha_solution+"'"
+        )
+        #teste
+        # Localize o elemento iframe
+        iframe_element = navegador.find_element(By.XPATH, '/html/body/div[5]/div[4]/iframe')
+        # Faça a troca para o iframe
+        navegador.switch_to.frame(iframe_element)
+        time.sleep(5)
+        # border = navegador.find_element(By.XPATH, '//*[@id="recaptcha-token"]')
+        WebDriverWait(navegador, 10).until(
+            EC.presence_of_element_located((By.ID, 'recaptcha-token'))
+        )
+        navegador.execute_script(
+            "document.querySelector('#recaptcha-token').value = "+"'"+captcha_solution+"'"
+        )
+        time.sleep(5)
+        # Agora, para voltar ao contexto principal do navegador, use switch_to.default_content()
+        navegador.switch_to.default_content()
+        #segundo iframe
+        iframe_click = navegador.find_element(By.XPATH, '//*[@id="recaptcha"]/div/div/iframe')
+        navegador.switch_to.frame(iframe_click)
+        border = navegador.find_element(By.XPATH, '//*[@id="recaptcha-anchor"]/div[1]')
+        border.click()
+        # #clicar n sou um robo
+        # recaptcha = navegador.find_element(By.XPATH, '//*[@id="recaptcha-anchor"]/div[1]')
+        # recaptcha.click()
+        # time.sleep(3)
+        entrar
         entrar = navegador.find_element(By.XPATH, '/html/body/app-root/div/app-main-layout/main/app-login/div/section[1]/div/form/div[5]/button')
         entrar.click()
     except WebDriverException as e:

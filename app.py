@@ -17,4 +17,4 @@ api.add_resource(pan_consulta, '/pan-consulta')
 api.add_resource(enviar_documento, '/enviar_documento')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5500)
