@@ -19,12 +19,6 @@ class c6_consulta(Resource):
             return {'success': False, 'message': 'CPF deve conter apenas numeros', 'cpf': cpf}, 400
         elif len(cpf) < 11:
             return {'success': False, 'message': 'CPF deve conter 11 números', 'cpf': cpf}, 400
-        #obtem o retorno do robo
-        # resultado = robo_c6_consulta(cpf)
-        # if resultado is None:
-        #     return {'success': False, 'message': resultado}, 400
-        # else:
-        #     return {'success': True, 'message': resultado}, 200
         return {'success': True, 'message':'CPF enviado para fila.'}
     
 class ole_consulta(Resource):
@@ -47,13 +41,16 @@ class facta_consulta(Resource):
     def post(self):
         #obtem as variaveis do payload
         cpf = request.json.get('cpf')
+        api_key = request.json.get('api_key')
+        sitekey_v2 = request.json.get('sitekey_v2')
+        url = request.json.get('url')
         #valida o tamanho das variaveis
         if len(cpf) > 11:
             return {'success': False, 'message': 'CPF deve conter no maximo 11 números'}, 400
         elif not cpf.isnumeric():
             return {'success': False, 'message': 'CPF deve conter apenas numeros'}, 400
         #obtem o retorno do robo
-        resultado = robo_facta_consulta(cpf)
+        resultado = robo_facta_consulta(cpf, api_key, sitekey_v2, url)
         if resultado is None:
             return {'success': False, 'message': resultado}, 400
         else:
@@ -80,7 +77,9 @@ class mercantil_consulta(Resource):
         #obtem as variaveis do payload
         cpf = request.json.get('cpf')
         api_key = request.json.get('api_key')
-        sitekey = request.json.get('sitekey')
+        sitekey_v2 = request.json.get('sitekey_v2')
+        sitekey_v3 = request.json.get('sitekey_v3')
+        site_key_token = request.json.get('site_key_token')
         url = request.json.get('url')
         chave_secreta = request.json.get('chave_secreta')
         #valida o tamanho das variaveis
@@ -89,7 +88,7 @@ class mercantil_consulta(Resource):
         elif not cpf.isnumeric():
             return {'success': False, 'message': 'CPF deve conter apenas numeros'}, 400
         #obtem o retorno do robo
-        resultado = robo_mercantil_consulta(cpf, api_key, sitekey, url, chave_secreta)
+        resultado = robo_mercantil_consulta(cpf, api_key, sitekey_v2, sitekey_v3, site_key_token, url, chave_secreta)
         if resultado is None:
             return {'success': False, 'message': resultado}, 400
         else:

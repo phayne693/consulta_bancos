@@ -46,3 +46,6 @@ Werkzeug
 wsproto
 chromedriver-binary
 clipboard
+undetected-chromedriver
+pika
+undetected-chromedriver==2.1.1

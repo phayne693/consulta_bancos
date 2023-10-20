@@ -16,11 +16,14 @@ from selenium.common.exceptions import WebDriverException
 import requests
 from selenium.webdriver.common.alert import Alert
 import undetected_chromedriver as uc
+from captcha import resolver_captcha_v2
+from twocaptcha import TwoCaptcha
+from teste import captchaSolver
 
 # def bevi_download():
 # definindo opcoes para o navegador
 options = Options()
-options.add_argument('--disabel-blink-features=AutomationControlled')
+options.add_argument('--disable-blink-features=AutomationControlled')
 options.add_experimental_option("UseAutomationExtension", False)
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 # iniciando o servico
@@ -45,14 +48,96 @@ opt = webdriver.ChromeOptions()
 opt.add_experimental_option("prefs", prefs)
 
 
-def robo_facta_consulta(cpf):
-    navegador = None
+def robo_facta_consulta(cpf, api_key, sitekey_v2, url):
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
         navegador.get('https://desenv.facta.com.br/sistemaNovo/login.php')
         time.sleep(3)
-    except WebDriverException as e:
-        return {'error': str(e)}
-    finally:
-        if navegador is not None:
+        #insere login
+        login = navegador.find_element(By.XPATH, '//*[@id="login"]')
+        login.send_keys("92415_36418486870")
+        #insere senha
+        senha = navegador.find_element(By.XPATH, '//*[@id="senha"]')
+        senha.send_keys("Loja7070*")
+        #entrar
+        entrar  = navegador.find_element(By.XPATH, '//*[@id="btnLogin"]')
+        entrar.click()
+        time.sleep(4)
+        #moce ate o icone hamburguer
+        hamb = navegador.find_element(By.XPATH, '//*[@id="corpo"]/header/div/div/div/a[2]')
+        ActionChains(navegador).move_to_element(hamb).click().perform()
+        time.sleep(2)
+        #move ate o menu lateral
+        menu = navegador.find_element(By.XPATH,'//*[@id="main-nav"]/div/ul/li[2]/a')
+        ActionChains(navegador).move_to_element(menu).click().perform()
+        # in100 = WebDriverWait(navegador, 10).until(
+        #     EC.presence_of_element_located((By.XPATH, '//*[@id="main-nav"]/div/ul/li[2]/ul/li[8]'))
+        # )
+        # ActionChains(navegador).move_to_element(in100).click().perform()
+        for i in range(5):
+            menu.send_keys(Keys.TAB)
+        in100 = navegador.find_element(By.XPATH,'//*[@id="main-nav"]/div/ul/li[2]/ul/li[8]/a')
+        in100.send_keys(Keys.ENTER)
+        #cclique consultar
+        consultar = WebDriverWait(navegador, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="main-nav"]/div/ul/li[2]/ul/li[8]/ul/li[2]/a'))
+        )
+        consultar.send_keys(Keys.ENTER)
+        navegador.implicitly_wait(6)
+        #cpf
+        documento = navegador.find_element(By.XPATH, '//*[@id="cpf"]')
+        documento.click()
+        documento.send_keys(cpf)
+        #recaptcha
+        captcha_solution_token = resolver_captcha_v2(api_key, sitekey_v2, url)
+        if captcha_solution_token:
+            print(f'ReCAPTCHA token resolvido com sucesso: {captcha_solution_token}')
+        else:
+            print('Falha ao resolver o reCAPTCHA')
+        # #muda para o ifram
+        # iframe_element = navegador.find_element(By.XPATH, '//*[@id="grecaptcha-beneficio"]/div/div/iframe')
+        # navegador.switch_to.frame(iframe_element)
+        # time.sleep(3)
+        #insere token
+        navegador.execute_script(
+            "document.getElementById('g-recaptcha-response').innerHTML = "+"'"+captcha_solution_token+"'"
+        )
+        time.sleep(5)
+        #consultar
+        consultar = navegador.find_element(By.XPATH, '//*[@id="consultarDadosDataPrev"]')
+        consultar.click()
+        try:
+            #pega o texto se estiver visível
+            div_text = WebDriverWait(navegador, 20).until(
+                EC.visibility_of_element_located((By.XPATH, '//*[@id="corpo"]/div[6]'))
+            )
+            div_elements = div_text.find_elements(By.TAG_NAME, 'div')
+            for div_element in div_elements:
+                font = div_element.find_element(By.TAG_NAME, 'font')
+                text = font.get_attribute('textContent')
+                #valida o texto
+                if 'Cliente não possui token de autorização válido, será necessária a solicitação de autorização ao cliente.' in text:
+                    #fecha o modal
+                    modal = navegador.find_element(By.XPATH, '//*[@id="corpo"]/div[6]/div[2]/a')
+                    modal.click()
+                    #se nao houver permissao sair e fecha o browser
+                    sair = navegador.find_element(By.XPATH, '//*[@id="corpo"]/header/div/div/div/div[2]/span/a')
+                    sair.click()
+                    time.sleep(3)
+                    navegador.quit()
+                    return {'success': False, 'message': text}
+        except WebDriverException as e:
+                    #caso de erro logout antes de fechar o navegador
+            sair = navegador.find_element(By.XPATH, '//*[@id="corpo"]/header/div/div/div/div[2]/span/a')
+            sair.click()
+            time.sleep(3)
             navegador.quit()
+            return {'error': str(e)}
+
+    except WebDriverException as e:
+        #caso de erro logout antes de fechar o navegador
+        sair = navegador.find_element(By.XPATH, '//*[@id="corpo"]/header/div/div/div/div[2]/span/a')
+        sair.click()
+        time.sleep(3)
+        navegador.quit()
+        return {'error': str(e)}
