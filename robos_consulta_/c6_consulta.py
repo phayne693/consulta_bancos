@@ -13,6 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException, NoAlertPresentException
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import StaleElementReferenceException
 import os
 import glob
 from selenium.common.exceptions import WebDriverException
@@ -68,11 +69,19 @@ def robo_c6_consulta(cpf):
         #aceita dialogo
         # navegador.find_element(By.LINK_TEXT,'Usuário já autenticado em outra estação. Deseja desconectar-se da estação e conectar-se através desta?').click()
         # Wait for the alert to be displayed and store it in a variable
-        alert = WebDriverWait(navegador, 2).until(
-            EC.alert_is_present()
-        )
-        alert.accept()
+        try:
+            alert = WebDriverWait(navegador, 5).until(
+                EC.alert_is_present()
+            )
+            text = alert.text
+            print(text)
+            alert.accept()
+        except WebDriverException as e:
+            print(str(e))
+        finally:
+            pass
         #move ate o elemento
+        print('aqui')
         cadastro = navegador.find_element(By.XPATH,'//*[@id="navbar-collapse-funcao"]/ul/li[1]/a')
         ActionChains(navegador).move_to_element(cadastro).perform()
         #seleciona FGTS
@@ -81,92 +90,146 @@ def robo_c6_consulta(cpf):
         # #insere CPF
         insere_cpf = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_ctl01_fj2_UcDBasicos_UcDBasic1_txtCpfCnpj_CAMPO"]')
         insere_cpf.send_keys(cpf)
-        #press TAB para carregar nome
         insere_cpf.send_keys(Keys.TAB)
-        time.sleep(2)
-        #verifica se precisa inserir nome e data nasc
-        def aguarde_visivel():
-            aguarde = navegador.find_element(By.XPATH,'//*[@id="ctl00_UpdPrs"]')
-            return aguarde
+        time.sleep(3)
         try:
-            elemento_aguarde = aguarde_visivel()
-            if elemento_aguarde.is_displayed:
-                wait = WebDriverWait(navegador,10)
-                wait.until_not(EC.visibility_of(elemento_aguarde))
-                # print('passei if')
-            else:
-                #insere nome
+            confirmar = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_ctl01_fj3_UcConfCanVlt_btnConfirmar_dvCBtn"]')
+            confirmar.click()
+            try:
+                print('bloco  1 try')
+                alert = WebDriverWait(navegador, 2).until(
+                    EC.alert_is_present()
+                )
+                text = alert.text
+                print(text)
+                alert.accept()
+                #se aceitar o alerta
+                time.sleep(3)
                 nome = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_ctl01_fj2_UcDBasicos_UcDBasic1_txtNome_CAMPO"]')
-                nome.send_keys('TESTE')
-                #insere data nasc
+                nome.send_keys('FULANO')
+                #data nascimento
                 nascimento = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_ctl01_fj2_UcDBasicos_UcDBasic1_txtDtNasc_CAMPO"]')
                 nascimento.send_keys('10/02/1950')
-                # print('passei else')
-        except WebDriverException as e:
-            return {'error': str(e)}
-        #confirmas
-        confirmar = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_ctl01_fj3_UcConfCanVlt_btnConfirmar_dvCBtn"]')
-        confirmar.click()
-        time.sleep(10)
-        # Espere até que a animação "Aguarde" não seja mais visível
-        wait = WebDriverWait(navegador, 10)
-        wait.until_not(EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_UpdPrs"]')))
-        # funcao para esperar a tabela
-        def esperar_tabela():
-            while True:
-                try:
-                    #obter saldo
-                    obt_saldo = navegador.find_element(By.XPATH, '//*[@id="btnObterSaldo_txt"]')
-                    obt_saldo.click()
-                    # espera a tabela ser visivel
-                    wait = WebDriverWait(navegador, 10)
-                    tabela = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_cph_FJ1_JPCSFGTS_UcConsultaSaldoFGTS_grdResultadoSaque"]')))
-                    break
-                except TimeoutException:
-                    #alerta JS
-                    try:
-                        alert = navegador.switch_to.alert
-                        alert.accept()
-                    except NoAlertPresentException:
-                        pass
-        esperar_tabela()
+                #confirmar novamente
+                confirmar = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_ctl01_fj3_UcConfCanVlt_btnConfirmar_dvCBtn"]')
+                confirmar.click()
+            except WebDriverException as e:
+                # #logout antes de fechar
+                # sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
+                # sair.click()
+                # navegador.quit()
+                print('bloco 2 except')
+                time.sleep(10)
+                # Espere até que a animação "Aguarde" não seja mais visível
+                print('cheguei aqui')
+                wait = WebDriverWait(navegador, 10)
+                wait.until_not(EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_UpdPrs"]')))
+                #aguardar taberla para consulta
+                def dialog(max_tentativas=3):
+                    for tentativa in range(max_tentativas):
+                        try:
+                            obt_saldo = navegador.find_element(By.XPATH, '//*[@id="btnObterSaldo_txt"]')
+                            obt_saldo.click()
+                            try:
+                                alert = WebDriverWait(navegador, 2).until(EC.alert_is_present())
+                                text = alert.text
+                                print(text)
+                                alert.accept()
+                                print('Alerta tratado com sucesso')
+                                if text == '9 - Trabalhador não possui adesão ao saque aniversário vigente na data corrente.':
+                                    return {'success': False, 'message': text}
+                            except:
+                                print('Nenhum alerta encontrado')
 
-        #insere tabela 0008
-        tabela_008 = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_txtCODTAB_CAMPO"]')
-        tabela_008.send_keys('0008')
-        time.sleep(1)
-        tabela_008.send_keys(Keys.TAB)
-        time.sleep(3)
-        #simular por
-        # select = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_cboSimularPor_CAMPO"]')
-        # valor = select.find_elements(By.TAG_NAME, 'option')
-        # print(valor)
-        # for options in valor:
-        #     if options == 'T':
-        #         options.click()
-        select = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_cboSimularPor_CAMPO"]')
-        seletor = Select(select)
-        #selecionar a opcao com T
-        seletor.select_by_value('T')
-        #calcular
-        time.sleep(2)
-        calcular = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_btnCalcular_dvCBtn"]')
-        calcular.click()
-        # Espere até que a animação "Aguarde" não seja mais visível
-        wait = WebDriverWait(navegador, 10)
-        wait.until_not(EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_UpdPrs"]')))
-        time.sleep(5)
-        # #pega os dados necessarios
-        valor_total = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_UCDG_GDDSP_ctl12_L3"]')
-        valor_total = valor_total.text
-        # resumo = {
-        #     'valor_total': valor_total
-        # }
-        # #converte o dicionario em json
-        # retorno_json = json.dumps({'resumo': resumo})
-        # print(retorno_json)
-        navegador.quit()
-        return {'success': True, 'valor_total': valor_total }
+                            # Checa a tabela
+                            try:
+                                tabela = WebDriverWait(navegador, 10).until(
+                                    EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_cph_FJ1_JPCSFGTS_UcConsultaSaldoFGTS_grdResultadoSaque"]'))
+                                )
+                                print('Tabela visível')
+                                # Se a tabela estiver visível, continue com as ações nela
+                                # Insira aqui as ações que você deseja realizar na tabela
+                                # Esperar por até 10 segundos para a tabela ser visível
+                                #insere tabela 0008
+                                tabela_008 = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_txtCODTAB_CAMPO"]')
+                                tabela_008.send_keys('0008')
+                                time.sleep(1)
+                                tabela_008.send_keys(Keys.TAB)
+                                time.sleep(3)
+                                select = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_cboSimularPor_CAMPO"]')
+                                seletor = Select(select)
+                                #selecionar a opcao com T
+                                seletor.select_by_value('T')
+                                #calcular
+                                time.sleep(2)
+                                calcular = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_btnCalcular_dvCBtn"]')
+                                calcular.click()
+                                # Espere até que a animação "Aguarde" não seja mais visível
+                                wait = WebDriverWait(navegador, 10)
+                                wait.until_not(EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_UpdPrs"]')))
+                                time.sleep(5)
+                                # #pega os dados necessarios
+                                valor_total = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_FJ1_JP2_UCTFAV2_UCDG_GDDSP_ctl12_L3"]')
+                                valor_total = valor_total.text
+                                resumo = {
+                                    'valor_total': valor_total
+                                }
+                                #converte o dicionario em json
+                                retorno_json = json.dumps({'resumo': resumo})
+                                print(retorno_json)
+                                #logout antes de fechar
+                                sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
+                                sair.click()
+                                navegador.quit()
+                                return {'success': True, 'valor_total': valor_total }
+                                return True  # Retorna True se a função for bem-sucedida
+                            except:
+                                #logout antes de fechar
+                                sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
+                                sair.click()
+                                navegador.quit()
+                                return {'success': False, 'message':'Erro ao localizar a tabela'}
+
+                        except Exception as e:
+                            #logout antes de fechar
+                            sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
+                            sair.click()
+                            navegador.quit()
+                            return {'success': False, 'message' : f"Erro ao obter saldo: {str(e)}"}
+
+                    print(f"Excedido número máximo de tentativas ({max_tentativas}).")
+                    return {'success': False, 'message': 'A função falhou ou a tabela não está visível.' }  # Retorna False se não for bem-sucedida após as tentativas
+
+                # Para usar a função:
+                result = dialog()
+                if result == 'Nenhum alerta encontrado':
+                    print('Erro na função.')
+                    return {'success': False, 'message': 'Tabela não encontrada'}
+                elif result == True:
+                    print("A função foi bem-sucedida e a tabela está visível.")
+                elif result:
+                    return result
+                else:
+                    return {'success': False, 'message': 'A função falhou ou a tabela não está visível.' }
+                return {'message': str(e)}
+            finally:
+                pass
+        except WebDriverException as e:
+            #logout antes de fechar
+            # sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
+            # sair.click()
+            # navegador.quit()
+            print('bloco 1')
+            return {'error': str(e)}
+        finally:
+            pass
+        
+
+        
     except WebDriverException as e:
+        #logout antes de fechar
+        print('bloco proncipal')
+        sair = navegador.find_element(By.XPATH, '//*[@id="lnkSair"]')
+        sair.click()
         navegador.quit()
-        return {'error': str(e)}
+        return {'success': False, 'message': str(e)}

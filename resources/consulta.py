@@ -1,10 +1,8 @@
 from flask_restful import Resource, reqparse
-from flask import request
+from flask import request, jsonify
 from robos_consulta_.c6_consulta import robo_c6_consulta
 from robos_consulta_.facta_consulta import robo_facta_consulta
-from robos_consulta_.ole_consulta import robo_ole_consulta
 from robos_consulta_.master_consulta import robo_master_consulta
-from robos_consulta_.pan_consulta import robo_pan_consulta
 from robos_consulta_.mercantil_consulta import robo_mercantil_consulta
 from send_rabbitmq import enviar_requisicao_fila
 
@@ -19,7 +17,8 @@ class c6_consulta(Resource):
             return {'success': False, 'message': 'CPF deve conter apenas numeros', 'cpf': cpf}, 400
         elif len(cpf) < 11:
             return {'success': False, 'message': 'CPF deve conter 11 números', 'cpf': cpf}, 400
-        return {'success': True, 'message':'CPF enviado para fila.'}
+        resultado = robo_c6_consulta(cpf)
+        return jsonify(resultado)
     
 
 class facta_consulta(Resource):
