@@ -126,8 +126,68 @@ def robo_facta_consulta(cpf, api_key, sitekey_v2, url):
                     time.sleep(3)
                     navegador.quit()
                     return {'success': False, 'message': text}
+                elif 'Consulta realizada com sucesso!!':
+                    #fecha o modal
+                    modal = navegador.find_element(By.XPATH, '//*[@id="corpo"]/div[6]/div[2]/a')
+                    modal.click()
+                    #resultado dataprev
+                    #nome
+                    nome = WebDriverWait(navegador, 10).until(
+                        EC.presence_of_element_located((By.XPATH,'//*[@id="resultadoDadosDataprev"]/p[1]'))
+                    )
+                    txt_nome = nome.get_attribute('textContent')
+                    nome_cli = txt_nome.replace('Nome:', '').strip()
+                    print(nome_cli)
+                    #beneficio
+                    beneficio = WebDriverWait(navegador, 10).until(
+                        EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[3]'))
+                    )
+                    txt_beneficio =  beneficio.get_attribute('textContent')
+                    num_beneficio = txt_beneficio.replace('Nº Benefício:', '').strip()
+                    print(num_beneficio)
+                    #margem disponivel
+                    margem_disponivel =  WebDriverWait(navegador, 10).until(
+                        EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[9]'))
+                    )
+                    txt_margem  = margem_disponivel.get_attribute('textContent')
+                    margem_disponivel = txt_margem.replace('Margem disponível:', '').strip()
+                    print(margem_disponivel)
+                    #margem cartao
+                    margem_cartao = WebDriverWait(navegador, 10).until(
+                        EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[10]'))
+                    )
+                    txt_margem_cartao = margem_cartao.get_attribute('textContent')
+                    margem_cartao = txt_margem_cartao.replace('Margem disponível do cartão:','').strip()
+                    print(margem_cartao)
+                    #margem rcc
+                    margem_rcc = WebDriverWait(navegador, 10).until(
+                        EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[12]'))
+                    )
+                    txt_margem_rcc = margem_rcc.get_attribute('textContent')
+                    margem_rcc = txt_margem_rcc.replace('Margem Disponível RCC:','').strip()
+                    print(margem_rcc)
+                    #fechar modal
+                    fechar = navegador.find_element(By.XPATH, '//*[@id="btnModal"]')
+                    fechar.click()
+                    #sair apos consulta
+                    sair = navegador.find_element(By.XPATH, '//*[@id="corpo"]/header/div/div/div/div[2]/span/a')
+                    sair.click()
+                    time.sleep(3)
+                    navegador.quit()
+                    #retorna as variaveis para o payload
+                    resumo = {
+                        'nome': nome_cli,
+                        'beneficio': num_beneficio,
+                        'margem_disponivel': margem_disponivel,
+                        'margem_cartao': margem_cartao,
+                        'margem_rcc': margem_rcc
+                    }
+                    return resumo
         except WebDriverException as e:
-                    #caso de erro logout antes de fechar o navegador
+            # Aguarda até que o elemento modal desapareça
+            wait = WebDriverWait(navegador, 10)
+            wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, 'div.modal-backdrop.fade.in')))
+            #caso de erro logout antes de fechar o navegador
             sair = navegador.find_element(By.XPATH, '//*[@id="corpo"]/header/div/div/div/div[2]/span/a')
             sair.click()
             time.sleep(3)
