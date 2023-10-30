@@ -15,11 +15,12 @@ import glob
 from selenium.common.exceptions import WebDriverException
 import requests
 from selenium.webdriver.common.alert import Alert
+import undetected_chromedriver as uc
 
 # def bevi_download():
 # definindo opcoes para o navegador
 options = Options()
-options.add_argument('--disabel-blink-features=AutomationControlled')
+options.add_argument('--disable-blink-features=AutomationControlled')
 options.add_experimental_option("UseAutomationExtension", False)
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
 # iniciando o servico
@@ -44,20 +45,29 @@ opt = webdriver.ChromeOptions()
 opt.add_experimental_option("prefs", prefs)
 
 
-def robo_master_consulta(cpf):
+def crefaz_consulta(cpf):
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
-        navegador.get('https://autenticacao.bancomaster.com.br')
+        navegador.get('https://crefazon.com.br/login')
         time.sleep(3)
-        #login
-        login = navegador.find_element(By.XPATH, '//*[@id="mat-input-0"]')
-        login.send_keys('FERNANDO.GIARINI35')
-        #senha
-        senha = navegador.find_element(By.XPATH, '//*[@id="mat-input-1"]')
-        senha.send_keys('Loja7070*')
-        senha.send_keys(Keys.TAB)
-        entrar = navegador.find_element(By.XPATH, '/html/body/app-root/app-login/div/div[2]/mat-card/mat-card-content/form/div[3]/button[2]')
+        #insere login
+        login = navegador.find_element(By.XPATH, '//*[@id="wrapper"]/div/div/div[2]/div/form/div[1]/div[2]/div/div/input')
+        login.send_keys("CC030112836")
+        #insere senha
+        senha = navegador.find_element(By.XPATH, '//*[@id="wrapper"]/div/div/div[2]/div/form/div[2]/div[2]/div/div/input')
+        senha.send_keys("DGD@IKDNJG")
+        #entrar
+        entrar  = navegador.find_element(By.XPATH, '//*[@id="wrapper"]/div/div/div[2]/div/form/button')
         entrar.click()
+    
+        input('teste')
     except WebDriverException as e:
+        #caso de erro logout antes de fechar o navegador
+        sair = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[1]/nav/ul/li/a/button')
+        sair.click()
+        time.sleep(3)
         navegador.quit()
         return {'error': str(e)}
+
+if __name__ == '__main__':
+    crefaz_consulta(cpf='43996081880')

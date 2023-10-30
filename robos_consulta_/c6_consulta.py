@@ -74,7 +74,7 @@ def robo_c6_consulta(cpf):
                 EC.alert_is_present()
             )
             text = alert.text
-            print(text)
+            # print(text)
             alert.accept()
         except WebDriverException as e:
             print(str(e))
@@ -96,12 +96,12 @@ def robo_c6_consulta(cpf):
             confirmar = navegador.find_element(By.XPATH, '//*[@id="ctl00_cph_ctl01_fj3_UcConfCanVlt_btnConfirmar_dvCBtn"]')
             confirmar.click()
             try:
-                print('bloco  1 try')
+                # print('bloco  1 try')
                 alert = WebDriverWait(navegador, 2).until(
                     EC.alert_is_present()
                 )
                 text = alert.text
-                print(text)
+                # print(text)
                 alert.accept()
                 #se aceitar o alerta
                 time.sleep(3)
@@ -118,10 +118,10 @@ def robo_c6_consulta(cpf):
                 # sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
                 # sair.click()
                 # navegador.quit()
-                print('bloco 2 except')
+                # print('bloco 2 except')
                 time.sleep(10)
                 # Espere até que a animação "Aguarde" não seja mais visível
-                print('cheguei aqui')
+                # print('cheguei aqui')
                 wait = WebDriverWait(navegador, 10)
                 wait.until_not(EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_UpdPrs"]')))
                 #aguardar taberla para consulta
@@ -133,7 +133,7 @@ def robo_c6_consulta(cpf):
                             try:
                                 alert = WebDriverWait(navegador, 2).until(EC.alert_is_present())
                                 text = alert.text
-                                print(text)
+                                # print(text)
                                 alert.accept()
                                 print('Alerta tratado com sucesso')
                                 if text == '9 - Trabalhador não possui adesão ao saque aniversário vigente na data corrente.':
@@ -146,7 +146,7 @@ def robo_c6_consulta(cpf):
                                 tabela = WebDriverWait(navegador, 10).until(
                                     EC.visibility_of_element_located((By.XPATH, '//*[@id="ctl00_cph_FJ1_JPCSFGTS_UcConsultaSaldoFGTS_grdResultadoSaque"]'))
                                 )
-                                print('Tabela visível')
+                                # print('Tabela visível')
                                 # Se a tabela estiver visível, continue com as ações nela
                                 # Insira aqui as ações que você deseja realizar na tabela
                                 # Esperar por até 10 segundos para a tabela ser visível
@@ -176,7 +176,7 @@ def robo_c6_consulta(cpf):
                                 }
                                 #converte o dicionario em json
                                 retorno_json = json.dumps({'resumo': resumo})
-                                print(retorno_json)
+                                # print(retorno_json)
                                 #logout antes de fechar
                                 sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
                                 sair.click()
@@ -197,13 +197,13 @@ def robo_c6_consulta(cpf):
                             navegador.quit()
                             return {'success': False, 'message' : f"Erro ao obter saldo: {str(e)}"}
 
-                    print(f"Excedido número máximo de tentativas ({max_tentativas}).")
+                    # print(f"Excedido número máximo de tentativas ({max_tentativas}).")
                     return {'success': False, 'message': 'A função falhou ou a tabela não está visível.' }  # Retorna False se não for bem-sucedida após as tentativas
 
                 # Para usar a função:
                 result = dialog()
                 if result == 'Nenhum alerta encontrado':
-                    print('Erro na função.')
+                    # print('Erro na função.')
                     return {'success': False, 'message': 'Tabela não encontrada'}
                 elif result == True:
                     print("A função foi bem-sucedida e a tabela está visível.")
@@ -219,7 +219,7 @@ def robo_c6_consulta(cpf):
             # sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
             # sair.click()
             # navegador.quit()
-            print('bloco 1')
+            # print('bloco 1')
             return {'error': str(e)}
         finally:
             pass
@@ -228,7 +228,7 @@ def robo_c6_consulta(cpf):
         
     except WebDriverException as e:
         #logout antes de fechar
-        print('bloco proncipal')
+        # print('bloco proncipal')
         sair = navegador.find_element(By.XPATH, '//*[@id="lnkSair"]')
         sair.click()
         navegador.quit()

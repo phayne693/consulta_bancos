@@ -48,7 +48,10 @@ opt = webdriver.ChromeOptions()
 opt.add_experimental_option("prefs", prefs)
 
 
-def robo_facta_consulta(cpf, api_key, sitekey_v2, url):
+def robo_facta_consulta(cpf):
+    sitekey_v2 = '6LefgIEcAAAAAMlY8s_hpgHPtYqhNmZ_Fu-DJDVg'
+    url = 'https://desenv.facta.com.br/sistemaNovo/login.php'
+    api_key = '97022095c1f46b1ed316fef6d5702431'
     try:
         navegador = webdriver.Chrome(service=page, options=opt)
         navegador.get('https://desenv.facta.com.br/sistemaNovo/login.php')
@@ -137,35 +140,35 @@ def robo_facta_consulta(cpf, api_key, sitekey_v2, url):
                     )
                     txt_nome = nome.get_attribute('textContent')
                     nome_cli = txt_nome.replace('Nome:', '').strip()
-                    print(nome_cli)
+                    # print(nome_cli)
                     #beneficio
                     beneficio = WebDriverWait(navegador, 10).until(
                         EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[3]'))
                     )
                     txt_beneficio =  beneficio.get_attribute('textContent')
-                    num_beneficio = txt_beneficio.replace('Nº Benefício:', '').strip()
-                    print(num_beneficio)
+                    num_beneficio = txt_beneficio.replace('Nº Benefício:', '').replace(',', '').strip()
+                    # print(num_beneficio)
                     #margem disponivel
                     margem_disponivel =  WebDriverWait(navegador, 10).until(
                         EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[9]'))
                     )
                     txt_margem  = margem_disponivel.get_attribute('textContent')
-                    margem_disponivel = txt_margem.replace('Margem disponível:', '').strip()
-                    print(margem_disponivel)
+                    margem_disponivel = txt_margem.replace('Margem disponível:', '').replace(',', '').strip()
+                    # print(margem_disponivel)
                     #margem cartao
                     margem_cartao = WebDriverWait(navegador, 10).until(
                         EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[10]'))
                     )
                     txt_margem_cartao = margem_cartao.get_attribute('textContent')
-                    margem_cartao = txt_margem_cartao.replace('Margem disponível do cartão:','').strip()
-                    print(margem_cartao)
+                    margem_cartao = txt_margem_cartao.replace('Margem disponível do cartão:','').replace(',', '').strip()
+                    # print(margem_cartao)
                     #margem rcc
                     margem_rcc = WebDriverWait(navegador, 10).until(
                         EC.presence_of_element_located((By.XPATH, '//*[@id="resultadoDadosDataprev"]/p[12]'))
                     )
                     txt_margem_rcc = margem_rcc.get_attribute('textContent')
-                    margem_rcc = txt_margem_rcc.replace('Margem Disponível RCC:','').strip()
-                    print(margem_rcc)
+                    margem_rcc = txt_margem_rcc.replace('Margem Disponível RCC:','').replace(',', '').strip()
+                    # print(margem_rcc)
                     #fechar modal
                     fechar = navegador.find_element(By.XPATH, '//*[@id="btnModal"]')
                     fechar.click()
