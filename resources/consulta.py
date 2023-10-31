@@ -25,16 +25,17 @@ class facta_consulta(Resource):
     def post(self):
         #obtem as variaveis do payload
         cpf = request.json.get('cpf')
-        api_key = request.json.get('api_key')
-        sitekey_v2 = request.json.get('sitekey_v2')
-        url = request.json.get('url')
+        # api_key = request.json.get('api_key')
+        # sitekey_v2 = request.json.get('sitekey_v2')
+        # url = request.json.get('url')
         #valida o tamanho das variaveis
         if len(cpf) > 11:
             return {'success': False, 'message': 'CPF deve conter no maximo 11 números'}, 400
         elif not cpf.isnumeric():
             return {'success': False, 'message': 'CPF deve conter apenas numeros'}, 400
         #obtem o retorno do robo
-        resultado = robo_facta_consulta(cpf, api_key, sitekey_v2, url)
+        # resultado = robo_facta_consulta(cpf, api_key, sitekey_v2, url)
+        resultado = robo_facta_consulta(cpf)
         if resultado is None:
             return {'success': False, 'message': resultado}, 400
         else:
