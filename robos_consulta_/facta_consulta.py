@@ -17,8 +17,7 @@ import requests
 from selenium.webdriver.common.alert import Alert
 import undetected_chromedriver as uc
 from captcha import resolver_captcha_v2
-from twocaptcha import TwoCaptcha
-from teste import captchaSolver
+
 
 # def bevi_download():
 # definindo opcoes para o navegador

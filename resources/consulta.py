@@ -5,6 +5,8 @@ from robos_consulta_.facta_consulta import robo_facta_consulta
 from robos_consulta_.master_consulta import robo_master_consulta
 from robos_consulta_.mercantil_consulta import robo_mercantil_consulta
 from send_rabbitmq import enviar_requisicao_fila
+from fila_crefaz_rabbitmq import enviar_cliente_fila
+from robos_consulta_.crefaz import crefaz_consulta
 
 class c6_consulta(Resource):
     def post(self):
@@ -121,3 +123,67 @@ class enviar_documento(Resource):
             response_data['failure_items'] = falha
 
         return response_data
+    
+class enviar_cliente_crefaz(Resource):
+    def post(self):
+        #parse a lista de cpfs do pyaload
+        parser = reqparse.RequestParser()
+        parser.add_argument('cliente_list', type=list, location='json')
+        data = parser.parse_args()
+
+        cliente_list = data.get('cliente_list', [])
+
+        #verifique se a lista de CPFs está vazia
+        if not cliente_list:
+            return {'success': False, 'message': 'Nenhum Cliente fornecido'}, 400
+        
+        #Valide cada cpf e envie para a fila
+        sucesso = []
+        falha = []
+
+        for cliente_obj in cliente_list:
+            cpf = cliente_obj.get('cpf', '')
+            nome = cliente_obj.get('nome', '')
+            nascimento = cliente_obj.get('nascimento', '')
+            telefone = cliente_obj.get('telefone', '')
+            cep = cliente_obj.get('cep', '')
+
+            #valida o tamanho das variaveis
+            if len(cpf) > 11:
+                falha.append({'cpf': cpf, 'message': 'CPF inválido'}), 400
+            elif not cpf.isnumeric():
+                falha.append({'cpf': cpf, 'message': 'CPF inválido'}), 400
+            elif len(cpf) < 11:
+                falha.append({'cpf': cpf, 'message': 'CPF inválido'}), 400
+            else:
+                enviar_cliente_fila(cpf,nome, nascimento,telefone,cep)
+                sucesso.append({
+                    'cpf': cpf, 
+                    'nome': nome,
+                    'nascimento': nascimento,
+                    'telefone': telefone,
+                    'cep': cep,
+                    'message': 'Cliente enviado para a fila'
+                })
+        
+        #Resposta com os cpf que foram processados com sucesso e falha
+        response_data = {'success': True, 'success_count': len(sucesso), 'failure_count': len(falha)}
+
+        if sucesso:
+            response_data['success_items'] = sucesso
+        
+        if falha:
+            response_data['failure_items'] = falha
+
+        return response_data
+
+class crefaz(Resource):
+    def post(self):
+        cpf = request.json.get('cpf', '')
+        nome = request.json.get('nome', '')
+        nascimento = request.json.get('nascimento', '')
+        telefone = request.json.get('telefone', '')
+        cep = request.json.get('cep', '')
+        
+        resultado = crefaz_consulta(cpf, nome, nascimento, telefone, cep)
+        return jsonify(resultado)
