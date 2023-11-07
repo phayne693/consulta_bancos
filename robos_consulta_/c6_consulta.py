@@ -9,17 +9,17 @@ from selenium.webdriver import ActionChains
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import TimeoutException, NoAlertPresentException
+# from selenium.common.exceptions import NoSuchElementException
+# from selenium.common.exceptions import TimeoutException, NoAlertPresentException
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import StaleElementReferenceException
-import os
-import glob
+# from selenium.common.exceptions import StaleElementReferenceException
+# import os
+# import glob
 from selenium.common.exceptions import WebDriverException
-import requests
+# import requests
 from selenium.webdriver.common.alert import Alert
-import undetected_chromedriver as uc
+# import undetected_chromedriver as uc
 import json
 
 # def bevi_download():
@@ -180,7 +180,7 @@ def robo_c6_consulta(cpf):
                                 #logout antes de fechar
                                 sair = navegador.find_element(By.XPATH, '//*[@id="ctl00_lk_Sair"]')
                                 sair.click()
-                                navegador.quit()
+                                
                                 return {'success': True, 'valor_total': valor_total }
                                 return True  # Retorna True se a função for bem-sucedida
                             except:
@@ -213,6 +213,7 @@ def robo_c6_consulta(cpf):
                     return {'success': False, 'message': 'A função falhou ou a tabela não está visível.' }
                 return {'message': str(e)}
             finally:
+                navegador.quit()
                 pass
         except WebDriverException as e:
             #logout antes de fechar
@@ -222,10 +223,8 @@ def robo_c6_consulta(cpf):
             # print('bloco 1')
             return {'error': str(e)}
         finally:
-            pass
-        
-
-        
+            navegador.quit()
+            pass  
     except WebDriverException as e:
         #logout antes de fechar
         # print('bloco proncipal')
