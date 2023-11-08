@@ -61,6 +61,13 @@ def crefaz_consulta(cpf, nome, nascimento, telefone, cep):
         time.sleep(5)
         entrar  = navegador.find_element(By.XPATH, '//*[@id="wrapper"]/div/div/div[2]/div/form/button')
         entrar.click()
+        try:
+            promocao = WebDriverWait(navegador,10).until(
+                EC.presence_of_element_located((By.XPATH, '/html/body/div[3]/div/div[2]/div/div[2]/button'))
+            )
+            promocao.click()
+        except WebDriverException as e:
+            print('Fim da promocao')
         #clica menu credito
         time.sleep(5)
         credito = WebDriverWait(navegador,10).until(
