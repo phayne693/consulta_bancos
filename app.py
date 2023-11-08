@@ -15,6 +15,9 @@ api.add_resource(mercantil_consulta, '/mercantil-consulta')
 api.add_resource(enviar_documento, '/enviar_documento')
 api.add_resource(enviar_cliente_crefaz, '/biro-webhook')
 api.add_resource(crefaz, '/crefaz')
+@app.route('/')
+def hello():
+    return"<h1>Olá</h1>"
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5500)
+    app.run(debug=True, port=6500)
