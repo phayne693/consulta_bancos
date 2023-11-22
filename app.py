@@ -13,7 +13,7 @@ api.add_resource(facta_consulta, '/facta-consulta')
 api.add_resource(master_consulta, '/master-consulta')
 api.add_resource(mercantil_consulta, '/mercantil-consulta')
 api.add_resource(enviar_documento, '/enviar_documento')
-api.add_resource(enviar_cliente_crefaz, '/biro-webhook')
+api.add_resource(enviar_cliente_crefaz, '/crefaz-consulta')
 api.add_resource(crefaz, '/crefaz')
 @app.route('/')
 def hello():
