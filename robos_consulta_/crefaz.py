@@ -17,6 +17,7 @@ import requests
 from selenium.webdriver.common.alert import Alert
 import undetected_chromedriver as uc
 import re
+import clipboard
 
 # definindo opcoes para o navegador
 options = Options()
@@ -98,9 +99,9 @@ def crefaz_consulta(cpf, nome, nascimento, telefone, cep):
             text = alerta.get_attribute('textContent')
             limpar_texto = text.replace('\n', '').strip().replace('OK','').strip()
             if limpar_texto == 'Você tem uma proposta em andamento para esse cliente, verifique em sua esteira de acompanhamento':
-                confirmar = navegador.find_element(By.XPATH, '/html/body/div[3]/div/div[3]/div/button')
-                confirmar.click()
-                time.sleep(3)
+                # confirmar = navegador.find_element(By.XPATH, '/html/body/div[3]/div/div[3]/div/button')
+                # confirmar.click()
+                # time.sleep(3)
                 # #teste para pegar o resultado
                 # pesquisar = WebDriverWait(navegador, 10).until(
                 #     EC.presence_of_element_located((By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div[1]/div[2]/div/div/form/div/div[2]/div/button[1]'))
@@ -133,40 +134,79 @@ def crefaz_consulta(cpf, nome, nascimento, telefone, cep):
                 #     print('Não foi possível separar a string')
                 
                 #logout
-                sair = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[1]/nav/ul/li/a/button')
-                sair.click()
-                time.sleep(3)
-                navegador.quit()
+                # sair = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[1]/nav/ul/li/a/button')
+                # sair.click()
+                # time.sleep(3)
+                # navegador.quit()
                 # print(limpar_texto)
                 return {limpar_texto}
             else:
                 print(text)
         except WebDriverException as e:
             print(str(e))
-        #nome
-        nome_cli = WebDriverWait(navegador,10).until(
+        finally:
+            if 'navegador' in locals():
+                navegador.quit()
+        #teste
+        clicks = WebDriverWait(navegador, 10).until(
+            EC.presence_of_element_located((By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]'))
+        )
+        ActionChains(navegador).move_to_element(clicks).click().perform()
+        nome
+        navegador.execute_script(
+            "document.querySelector('#page-wrapper > div.wrapper.wrapper-content.animated.fadeInRight > div > div > div > div > div.ibox-content > form > div:nth-child(1) > div.col-lg-9 > div > div.ant-col.ant-form-item-control > div > div > input').value = "+"'"+nome+"'"
+        )
+        nome_cli = WebDriverWait(navegador,5).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]/form/div[1]/div[2]/div/div[2]/div/div/input'))
         )
-        nome_cli.send_keys(nome)#IVANDERLEI MENDES SILVA
+        # ActionChains(navegador).move_to_element(nome_cli).double_click().perform()
+        nome_cli.click()#IVANDERLEI MENDES SILVA
+        nome_limpo = nome.replace('Nome:', '').strip()
+        clipboard.copy(nome_limpo)
+        #simula ctrl+v e envia a chave
+        ActionChains(navegador).key_down(Keys.CONTROL).send_keys('v').perform()
+        ActionChains(navegador).key_up(Keys.CONTROL)
+        time.sleep(3)
+        # nome_cli.send_keys(Keys.ENTER)
         #nascimento
         nascimento_cli = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]/form/div[2]/div[1]/div/div[2]/div/div/div/div/input')
         nascimento_cli.click()
         time.sleep(4)
-        nascimento_cli.send_keys(nascimento)#16/04/1973
+        nascimento_limpo = nascimento.replace('Nascimento:', '').strip()
+        clipboard.copy(nascimento_limpo)
+        #simula ctrl+v e envia a chave
+        ActionChains(navegador).key_down(Keys.CONTROL).send_keys('v').perform()
+        ActionChains(navegador).key_up(Keys.CONTROL)
+        time.sleep(3)
         #telefone
-        telefone_cli = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]/form/div[2]/div[2]/div/div[2]/div/div/input')        
-        telefone_cli.send_keys(telefone)#38991915624
+        telefone_cli = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]/form/div[2]/div[2]/div/div[2]/div/div/input')
+        telefone_cli.click()
+        telefone_limpo = telefone.replace('Telefone:', '').strip()        
+        clipboard.copy(telefone_limpo)
+        #simula ctrl+v e envia a chave
+        ActionChains(navegador).key_down(Keys.CONTROL).send_keys('v').perform()
+        ActionChains(navegador).key_up(Keys.CONTROL)
+        time.sleep(3)
         #profissao
-        profissao = navegador.find_element(By.XPATH, '//*[@id="rc_select_0"]')
+        profissao = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]/form/div[2]/div[3]/div/div[2]/div/div/div/div[1]/span[2]')
         ActionChains(navegador).move_to_element(profissao).click().perform()
-        profissao.send_keys('Assalariado')
-        profissao.send_keys(Keys.TAB)
+        time.sleep(3)
+        ActionChains(navegador).move_to_element(profissao).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ENTER).perform()
+        time.sleep(3)
         #cep
         cep_cli = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]/form/div[3]/div[1]/div/div[2]/div/div/input')
-        cep_cli.send_keys(cep)#39520000
+        cep_cli.click()
+        cep_limpo = cep.replace('CEP', '').strip()
+        clipboard.copy(cep_limpo)
+        #simula ctrl+v e envia a chave
+        ActionChains(navegador).key_down(Keys.CONTROL).send_keys('v').perform()
+        ActionChains(navegador).key_up(Keys.CONTROL)
+        # print(cep)
+        # cep_cli.send_keys(cep)
         cep_cli.send_keys(Keys.TAB)
         #avancar
-        time.sleep(5)
+        time.sleep(8)
+        cep_cli.send_keys(Keys.TAB)
         avancar = WebDriverWait(navegador,10).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div/div[2]/form/div[4]/button'))
         )
@@ -178,18 +218,21 @@ def crefaz_consulta(cpf, nome, nascimento, telefone, cep):
             text = alerta.get_attribute('textContent')
             limpar_texto = text.replace('\n', '').strip().replace('OK','').strip()
             if limpar_texto == 'Não foi possível aprovar essa solicitação. Veja mais detalhes acessando a proposta através da lista de acompanhamento':
-                confirmar = navegador.find_element(By.XPATH, '/html/body/div[5]/div/div[3]/div/button')
-                confirmar.click()
-                time.sleep(3)
-                #logout
-                sair = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[1]/nav/ul/li/a/button')
-                sair.click()
-                time.sleep(3)
+                # confirmar = navegador.find_element(By.XPATH, '/html/body/div[5]/div/div[3]/div/button')
+                # confirmar.click()
+                # time.sleep(3)
+                # #logout
+                # sair = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[1]/nav/ul/li/a/button')
+                # sair.click()
+                # time.sleep(3)
                 navegador.quit()
             else:
                 print(text)
         except WebDriverException as e:
             print(str(e))
+        finally:
+            if 'navegador' in locals():
+                navegador.quit()
         #segue para pegar o que estiver disponivel
         oferta = WebDriverWait(navegador, 10).until(
             EC.presence_of_element_located((By.XPATH, '//*[@id="page-wrapper"]/div[3]/div/div/div/div[2]/div[2]/div[1]/div/div/div'))
@@ -222,9 +265,12 @@ def crefaz_consulta(cpf, nome, nascimento, telefone, cep):
         
     except WebDriverException as e:
         #caso de erro logout antes de fechar o navegador
-        sair = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[1]/nav/ul/li/a/button')
-        sair.click()
-        time.sleep(3)
-        navegador.quit()
+        # sair = navegador.find_element(By.XPATH, '//*[@id="page-wrapper"]/div[1]/nav/ul/li/a/button')
+        # sair.click()
+        # time.sleep(3)
+        # navegador.quit()
         # return {'error': str(e)}
         print(str(e))
+    finally:
+        if 'navegador' in locals():
+            navegador.quit()
